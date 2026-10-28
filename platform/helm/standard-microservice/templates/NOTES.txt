@@ -1,0 +1,15 @@
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+Check rollout:
+  kubectl rollout status deployment/{{ include "standard-microservice.fullname" . }} -n {{ .Release.Namespace }}
+
+Check resources:
+  kubectl get deploy,svc,pods -n {{ .Release.Namespace }}
+
+{{- if .Values.ingress.enabled }}
+Ingress host(s):
+{{- range .Values.ingress.hosts }}
+  - {{ .host }}
+{{- end }}
+{{- end }}

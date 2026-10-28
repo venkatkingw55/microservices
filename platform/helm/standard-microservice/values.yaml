@@ -1,0 +1,165 @@
+nameOverride: ""
+fullnameOverride: ""
+
+replicaCount: 2
+
+image:
+  repository: nginx
+  tag: "1.27.5"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+serviceAccount:
+  create: true
+  name: ""
+  automountServiceAccountToken: false
+  annotations: {}
+
+podAnnotations: {}
+podLabels: {}
+
+deploymentAnnotations: {}
+revisionHistoryLimit: 5
+progressDeadlineSeconds: 600
+minReadySeconds: 5
+terminationGracePeriodSeconds: 30
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+containerPort: 8080
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: http
+  annotations: {}
+
+env: []
+# Example:
+# env:
+#   - name: LOG_LEVEL
+#     value: info
+
+envFrom: []
+# Reference existing ConfigMaps/Secrets without storing secret values in Helm:
+# envFrom:
+#   - configMapRef:
+#       name: users-config
+#   - secretRef:
+#       name: users-runtime-secrets
+
+configMap:
+  enabled: false
+  data: {}
+
+command: []
+args: []
+
+probes:
+  startup:
+    enabled: true
+    path: /health/startup
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 30
+  readiness:
+    enabled: true
+    path: /health/ready
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    path: /health/live
+    initialDelaySeconds: 10
+    periodSeconds: 20
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: null
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # Set maxUnavailable instead of minAvailable if required, not both.
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts: []
+  tls: []
+# Example:
+# ingress:
+#   enabled: true
+#   className: nginx
+#   hosts:
+#     - host: users.example.com
+#       paths:
+#         - path: /
+#           pathType: Prefix
+#   tls:
+#     - secretName: users-tls
+#       hosts:
+#         - users.example.com
+
+networkPolicy:
+  enabled: false
+  ingress:
+    # Empty means no additional ingress rules are generated. Define rules for your CNI and app topology.
+    from: []
+  egress:
+    # Empty means no egress rules are generated. When enabled, explicitly model DNS and required destinations.
+    to: []
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+podSecurityContext:
+  fsGroup: 10001
+  fsGroupChangePolicy: OnRootMismatch
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+priorityClassName: ""
+terminationMessagePolicy: File
+
+extraVolumes: []
+extraVolumeMounts: []
+
+# Optional HTTP-based chart test. Override the URL for your application if needed.
+tests:
+  enabled: false
+  curlImage: curlimages/curl:8.12.1
+  url: ""

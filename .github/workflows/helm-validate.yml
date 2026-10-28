@@ -1,0 +1,36 @@
+name: Helm chart validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.3
+
+      - name: Lint and render every service/environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          chart="platform/helm/standard-microservice"
+          for env in dev staging production; do
+            for svc in users orders payments notifications; do
+              echo "Validating ${svc} in ${env}"
+              helm lint "$chart" -f "deploy/${env}/${svc}.yaml"
+              helm template "$svc" "$chart" \
+                --namespace "${svc}-${env}" \
+                -f "deploy/${env}/${svc}.yaml" >/dev/null
+            done
+          done

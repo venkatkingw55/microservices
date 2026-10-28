@@ -1,0 +1,12 @@
+apiVersion: v2
+name: standard-microservice
+description: Reusable, security-oriented Helm chart for stateless backend microservices
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - microservice
+  - platform
+  - kubernetes
+maintainers:
+  - name: Platform Engineering

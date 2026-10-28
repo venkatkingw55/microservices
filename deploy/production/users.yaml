@@ -1,0 +1,123 @@
+# Replace registry, image tag, domains, and application-specific paths before deployment.
+nameOverride: users
+replicaCount: 3
+
+image:
+  repository: us-central1-docker.pkg.dev/REPLACE_PROJECT/REPLACE_REPOSITORY/users
+  tag: "REPLACE_WITH_GIT_SHA"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+containerPort: 8080
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: http
+  annotations: {}
+
+env:
+  - name: LOG_LEVEL
+    value: info
+  - name: APP_ENV
+    value: "production"
+
+envFrom: []
+# Reference secrets managed outside Helm, for example:
+# envFrom:
+#   - secretRef:
+#       name: users-runtime-secrets
+
+probes:
+  startup:
+    enabled: true
+    path: /health/startup
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 30
+  readiness:
+    enabled: true
+    path: /health/ready
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
+  liveness:
+    enabled: true
+    path: /health/live
+    initialDelaySeconds: 10
+    periodSeconds: 20
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: null
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+serviceAccount:
+  create: true
+  name: ""
+  automountServiceAccountToken: false
+  annotations: {}
+
+podAnnotations: {}
+podLabels: {}
+
+# Enable only after configuring rules for your cluster's DNS, ingress, monitoring,
+# and required service-to-service dependencies.
+networkPolicy:
+  enabled: false
+  ingress:
+    from: []
+  egress:
+    to: []
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: users.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+configMap:
+  enabled: true
+  data:
+    APP_ENV: "production"
+    LOG_FORMAT: "json"
+
+tests:
+  enabled: false
+  curlImage: curlimages/curl:8.12.1
+  url: ""
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/instance: users
+

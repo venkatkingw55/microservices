@@ -1,0 +1,55 @@
+# Example only: replace repoURL, target revision, destination cluster, and policy.
+# This uses Argo CD multi-source support so values can live outside the chart directory.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: company-microservices
+  namespace: argocd
+spec:
+  generators:
+    - matrix:
+        generators:
+          - list:
+              elements:
+                - service: users
+                - service: orders
+                - service: payments
+                - service: notifications
+          - list:
+              elements:
+                - environment: dev
+                  namespaceSuffix: dev
+                - environment: staging
+                  namespaceSuffix: staging
+                - environment: production
+                  namespaceSuffix: production
+  template:
+    metadata:
+      name: '{{service}}-{{environment}}'
+    spec:
+      project: default
+      sources:
+        - repoURL: https://github.com/REPLACE_ORG/company-platform.git
+          targetRevision: main
+          path: platform/helm/standard-microservice
+          helm:
+            valueFiles:
+              - '$values/deploy/{{environment}}/{{service}}.yaml'
+        - repoURL: https://github.com/REPLACE_ORG/company-platform.git
+          targetRevision: main
+          ref: values
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{service}}-{{namespaceSuffix}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+
+# Before enabling:
+# - Confirm your Argo CD version supports multi-source Applications and ApplicationSets.
+# - Replace the repo URL and target revision.
+# - Review automated prune/self-heal and production approval policy.
+# - Configure Argo CD project RBAC and destination restrictions.
