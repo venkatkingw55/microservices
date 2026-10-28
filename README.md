@@ -33,6 +33,7 @@ This is a strong starter/reference, not a substitute for organization-specific s
 ```text
 company-platform/
 ├── services/
+│   ├── platformhttp/          # shared HTTP server, health, JSON logs
 │   ├── users/
 │   ├── orders/
 │   ├── payments/
@@ -54,6 +55,23 @@ company-platform/
 ├── bitbucket-pipelines.yml
 └── Makefile
 ```
+
+## Application services
+
+`users`, `orders`, `payments`, and `notifications` are small Python services. They listen on port 8080, serve `/health/startup`, `/health/ready`, and `/health/live`, log JSON to stdout, and drain on SIGTERM. Records stay in memory for the life of the process.
+
+```bash
+python3 -m unittest discover -s services -t . -p 'test_*.py'
+python3 -m services.users
+```
+
+Build an image from the repository root, for example:
+
+```bash
+docker build -f services/users/Dockerfile -t users:dev .
+```
+
+The image runs as uid/gid 10001 and does not write to the filesystem, matching the chart security context.
 
 ## Prerequisites
 

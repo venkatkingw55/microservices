@@ -1,14 +1,19 @@
 # payments service
 
-Place the application source code, tests, Dockerfile, and service-specific build configuration here.
+HTTP API that records an in-memory payment authorization. It does not call a payment processor and does not store card or bank details.
+
+- `POST /v1/payments` with `{"orderId","amountCents","currency"}`
+- `GET /v1/payments/{id}`
+- `GET /health/startup`, `GET /health/ready`, `GET /health/live`
+- `GET /metrics`
+
+```bash
+python3 -m services.payments
+docker build -f services/payments/Dockerfile -t payments:dev .
+```
 
 Deployment is configured by `deploy/dev/payments.yaml`, `deploy/staging/payments.yaml`, and
 `deploy/production/payments.yaml`, using the shared chart at
 `platform/helm/standard-microservice`.
 
-Ensure the application:
-- listens on the configured container port;
-- implements the configured startup, readiness, and liveness endpoints, or update the paths;
-- handles SIGTERM and graceful shutdown;
-- runs as a non-root user and supports a read-only root filesystem, or document a justified override;
-- logs to stdout/stderr and exposes application metrics through your chosen monitoring setup.
+The process listens on `PORT` (default 8080), handles SIGTERM by failing readiness and draining, runs as uid 10001, and logs JSON to stdout.

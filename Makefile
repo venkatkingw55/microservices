@@ -2,7 +2,10 @@ CHART := platform/helm/standard-microservice
 SERVICES := users orders payments notifications
 ENVS := dev staging production
 
-.PHONY: lint render validate
+.PHONY: lint render validate test
+
+test:
+	python3 -m unittest discover -s services -t . -p 'test_*.py'
 lint:
 	@for svc in $(SERVICES); do \
 	  for env in $(ENVS); do \

@@ -1,14 +1,20 @@
 # users service
 
-Place the application source code, tests, Dockerfile, and service-specific build configuration here.
+HTTP API for user records. Data is kept in memory for the life of the process.
+
+- `POST /v1/users` with `{"name","email"}`
+- `GET /v1/users`
+- `GET /v1/users/{id}`
+- `GET /health/startup`, `GET /health/ready`, `GET /health/live`
+- `GET /metrics`
+
+```bash
+python3 -m services.users
+docker build -f services/users/Dockerfile -t users:dev .
+```
 
 Deployment is configured by `deploy/dev/users.yaml`, `deploy/staging/users.yaml`, and
 `deploy/production/users.yaml`, using the shared chart at
 `platform/helm/standard-microservice`.
 
-Ensure the application:
-- listens on the configured container port;
-- implements the configured startup, readiness, and liveness endpoints, or update the paths;
-- handles SIGTERM and graceful shutdown;
-- runs as a non-root user and supports a read-only root filesystem, or document a justified override;
-- logs to stdout/stderr and exposes application metrics through your chosen monitoring setup.
+The process listens on `PORT` (default 8080), handles SIGTERM by failing readiness and draining, runs as uid 10001, and logs JSON to stdout.

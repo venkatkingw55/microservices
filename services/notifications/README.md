@@ -1,14 +1,19 @@
 # notifications service
 
-Place the application source code, tests, Dockerfile, and service-specific build configuration here.
+HTTP API that queues notification records in memory. Nothing is sent to an external provider.
+
+- `POST /v1/notifications` with `{"userId","channel","message"}` (`channel` is `email` or `sms`)
+- `GET /v1/notifications/{id}`
+- `GET /health/startup`, `GET /health/ready`, `GET /health/live`
+- `GET /metrics`
+
+```bash
+python3 -m services.notifications
+docker build -f services/notifications/Dockerfile -t notifications:dev .
+```
 
 Deployment is configured by `deploy/dev/notifications.yaml`, `deploy/staging/notifications.yaml`, and
 `deploy/production/notifications.yaml`, using the shared chart at
 `platform/helm/standard-microservice`.
 
-Ensure the application:
-- listens on the configured container port;
-- implements the configured startup, readiness, and liveness endpoints, or update the paths;
-- handles SIGTERM and graceful shutdown;
-- runs as a non-root user and supports a read-only root filesystem, or document a justified override;
-- logs to stdout/stderr and exposes application metrics through your chosen monitoring setup.
+The process listens on `PORT` (default 8080), handles SIGTERM by failing readiness and draining, runs as uid 10001, and logs JSON to stdout.
