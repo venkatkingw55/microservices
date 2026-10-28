@@ -1,5 +1,6 @@
 .dockerignore
 .github/workflows/helm-validate.yml
+.github/workflows/services.yml
 .gitignore
 .helmignore
 FILE-MANIFEST.txt

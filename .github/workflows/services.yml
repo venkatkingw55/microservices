@@ -1,0 +1,37 @@
+name: Service tests and images
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Run unit tests
+        run: python -m unittest discover -s services -t . -p 'test_*.py'
+
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [users, orders, payments, notifications]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -f "services/${{ matrix.service }}/Dockerfile" -t "${{ matrix.service }}:${{ github.sha }}" .
