@@ -168,7 +168,7 @@ For stronger separation, keep production deployment permissions and production v
 ## CI examples
 
 - `.github/workflows/helm-validate.yml` validates chart syntax and renders all values files.
-- `.github/workflows/services.yml` runs the service unit tests and builds each image. It does not push images.
+- `.github/workflows/services.yml` runs the service unit tests, builds each image, and on pushes to `main` publishes it to Docker Hub as `<DOCKER_USERNAME>/<service>:<git-sha>`.
 - `bitbucket-pipelines.yml` is an example of direct Helm delivery. It intentionally leaves cloud authentication and production approvals to your secured pipeline configuration.
 - Do not store long-lived kubeconfigs or cloud keys as plain repository variables. Prefer OIDC/workload identity or your organization’s approved short-lived credentials flow.
 
