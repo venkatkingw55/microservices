@@ -23,6 +23,7 @@ jobs:
       - name: Run unit tests
         run: python -m unittest discover -s services -t . -p 'test_*.py'
   images:
+    needs: unittest
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
